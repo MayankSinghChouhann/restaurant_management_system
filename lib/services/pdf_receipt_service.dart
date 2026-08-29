@@ -7,80 +7,147 @@ class PdfReceiptService {
   static Future<Uint8List> generateReceipt(Invoice invoice) async {
     final pdf = pw.Document();
 
+    // Bold style helper
+    final bold = pw.TextStyle(fontWeight: pw.FontWeight.bold);
+    const smallFont = pw.TextStyle(fontSize: 9);
+    final boldSmall = pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9);
+
     pdf.addPage(
       pw.Page(
-        pageFormat: PdfPageFormat.roll80, // Receipt printer format (80mm)
+        pageFormat: PdfPageFormat.roll80,
+        margin: const pw.EdgeInsets.all(12),
         build: (pw.Context context) {
           return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            crossAxisAlignment: pw.CrossAxisAlignment.center,
             children: [
-              pw.Center(
-                child: pw.Text('HOTEL GOLDEN LEAF', style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
-              ),
-              pw.Center(
-                child: pw.Text('RESTAURANT', style: const pw.TextStyle(fontSize: 14)),
-              ),
-              pw.SizedBox(height: 10),
-              pw.Text('Bill No: ${invoice.billNumber}'),
-              pw.Text('Date: ${invoice.formattedDate}'),
-              pw.Text('Time: ${invoice.formattedTime}'),
-              if (invoice.tableOrRoom != null) pw.Text('Table/Room: ${invoice.tableOrRoom}'),
+              // Header
+              pw.Text('HOTEL GOLDEN LEAF',
+                  style: pw.TextStyle(fontSize: 15, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 2),
+              pw.Text('RESTAURANT', style: const pw.TextStyle(fontSize: 12)),
+              pw.SizedBox(height: 2),
+              pw.Text('www.hotelgoldenleafdehradun.com',
+                  style: const pw.TextStyle(fontSize: 8)),
+              pw.SizedBox(height: 8),
               pw.Divider(),
-              pw.Row(
+
+              // Bill info — left aligned
+              pw.Align(
+                alignment: pw.Alignment.centerLeft,
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text('Bill No: ${invoice.billNumber}', style: smallFont),
+                    pw.Text('Date: ${invoice.formattedDate}', style: smallFont),
+                    pw.Text('Time: ${invoice.formattedTime}', style: smallFont),
+                    if (invoice.tableOrRoom != null &&
+                        invoice.tableOrRoom!.isNotEmpty)
+                      pw.Text('Room No: ${invoice.tableOrRoom}', style: smallFont),
+                  ],
+                ),
+              ),
+              pw.Divider(),
+
+              // Table header
+              pw.Table(
+                columnWidths: {
+                  0: const pw.FlexColumnWidth(5),   // Item name
+                  1: const pw.FixedColumnWidth(24),  // Qty
+                  2: const pw.FixedColumnWidth(40),  // Rate
+                  3: const pw.FixedColumnWidth(44),  // Amount
+                },
                 children: [
-                  pw.Expanded(child: pw.Text('Item', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)), flex: 4),
-                  pw.Expanded(child: pw.Text('Qty', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)), flex: 1),
-                  pw.Expanded(child: pw.Text('Rate', textAlign: pw.TextAlign.right, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)), flex: 2),
-                  pw.Expanded(child: pw.Text('Amount', textAlign: pw.TextAlign.right, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)), flex: 2),
+                  pw.TableRow(children: [
+                    pw.Text('Item', style: boldSmall),
+                    pw.Text('Qty', textAlign: pw.TextAlign.center, style: boldSmall),
+                    pw.Text('Rate', textAlign: pw.TextAlign.right, style: boldSmall),
+                    pw.Text('Amt', textAlign: pw.TextAlign.right, style: boldSmall),
+                  ]),
                 ],
               ),
               pw.Divider(),
-              ...invoice.items.map((item) {
-                final String itemName = item.variantName == 'Regular' 
-                    ? item.itemName 
-                    : '${item.itemName} (${item.variantName})';
-                return pw.Padding(
-                  padding: const pw.EdgeInsets.symmetric(vertical: 2),
-                  child: pw.Row(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Expanded(child: pw.Text(itemName), flex: 4),
-                      pw.Expanded(child: pw.Text(item.quantity.toString(), textAlign: pw.TextAlign.center), flex: 1),
-                      pw.Expanded(child: pw.Text(item.unitPrice.toStringAsFixed(2), textAlign: pw.TextAlign.right), flex: 2),
-                      pw.Expanded(child: pw.Text(item.itemTotal.toStringAsFixed(2), textAlign: pw.TextAlign.right), flex: 2),
-                    ],
-                  ),
-                );
-              }),
+
+              // Items
+              pw.Table(
+                columnWidths: {
+                  0: const pw.FlexColumnWidth(5),
+                  1: const pw.FixedColumnWidth(24),
+                  2: const pw.FixedColumnWidth(40),
+                  3: const pw.FixedColumnWidth(44),
+                },
+                children: invoice.items.map((item) {
+                  final String itemName = item.variantName == 'Regular'
+                      ? item.itemName
+                      : '${item.itemName}\n(${item.variantName})';
+                  return pw.TableRow(children: [
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.symmetric(vertical: 2),
+                      child: pw.Text(itemName, style: smallFont),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.symmetric(vertical: 2),
+                      child: pw.Text(
+                        item.quantity.toString(),
+                        textAlign: pw.TextAlign.center,
+                        style: smallFont,
+                      ),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.symmetric(vertical: 2),
+                      child: pw.Text(
+                        'Rs.${item.unitPrice.toStringAsFixed(2)}',
+                        textAlign: pw.TextAlign.right,
+                        style: smallFont,
+                      ),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.symmetric(vertical: 2),
+                      child: pw.Text(
+                        'Rs.${item.itemTotal.toStringAsFixed(2)}',
+                        textAlign: pw.TextAlign.right,
+                        style: smallFont,
+                      ),
+                    ),
+                  ]);
+                }).toList(),
+              ),
+              pw.Divider(),
+
+              // Totals
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Subtotal:', style: smallFont),
+                  pw.Text('Rs.${invoice.subtotal.toStringAsFixed(2)}', style: smallFont),
+                ],
+              ),
+              pw.SizedBox(height: 2),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('GST @ ${invoice.gstRate.toStringAsFixed(0)}%:', style: smallFont),
+                  pw.Text('Rs.${invoice.gstAmount.toStringAsFixed(2)}', style: smallFont),
+                ],
+              ),
               pw.Divider(),
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  pw.Text('Subtotal:'),
-                  pw.Text(invoice.subtotal.toStringAsFixed(2)),
+                  pw.Text('GRAND TOTAL:', style: bold),
+                  pw.Text('Rs.${invoice.grandTotal.toStringAsFixed(2)}', style: bold),
                 ],
               ),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('GST @ ${invoice.gstRate.toStringAsFixed(0)}%:'),
-                  pw.Text(invoice.gstAmount.toStringAsFixed(2)),
-                ],
-              ),
-              pw.Divider(),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('GRAND TOTAL:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                  pw.Text(invoice.grandTotal.toStringAsFixed(2), style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                ],
-              ),
-              pw.SizedBox(height: 20),
+              pw.SizedBox(height: 16),
+
+              // Footer
+              pw.Center(child: pw.Text('Thank You!', style: bold)),
+              pw.Center(child: pw.Text('Please Visit Again', style: smallFont)),
+              pw.SizedBox(height: 4),
               pw.Center(
-                child: pw.Text('Thank You!', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-              ),
-              pw.Center(
-                child: pw.Text('Please Visit Again'),
+                child: pw.Text(
+                  'www.hotelgoldenleafdehradun.com',
+                  style: const pw.TextStyle(fontSize: 8),
+                ),
               ),
             ],
           );
