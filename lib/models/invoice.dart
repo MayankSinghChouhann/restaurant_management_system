@@ -14,6 +14,22 @@ class InvoiceItem {
     required this.unitPrice,
     required this.itemTotal,
   });
+
+  Map<String, dynamic> toJson() => {
+        'itemName': itemName,
+        'variantName': variantName,
+        'quantity': quantity,
+        'unitPrice': unitPrice,
+        'itemTotal': itemTotal,
+      };
+
+  factory InvoiceItem.fromJson(Map<String, dynamic> json) => InvoiceItem(
+        itemName: json['itemName'] as String,
+        variantName: json['variantName'] as String,
+        quantity: json['quantity'] as int,
+        unitPrice: (json['unitPrice'] as num).toDouble(),
+        itemTotal: (json['itemTotal'] as num).toDouble(),
+      );
 }
 
 class Invoice {
@@ -41,4 +57,30 @@ class Invoice {
 
   String get formattedDate => DateFormat('dd MMM yyyy').format(date);
   String get formattedTime => DateFormat('hh:mm a').format(date);
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'billNumber': billNumber,
+        'date': date.toIso8601String(),
+        'tableOrRoom': tableOrRoom,
+        'items': items.map((e) => e.toJson()).toList(),
+        'subtotal': subtotal,
+        'gstRate': gstRate,
+        'gstAmount': gstAmount,
+        'grandTotal': grandTotal,
+      };
+
+  factory Invoice.fromJson(Map<String, dynamic> json) => Invoice(
+        id: json['id'] as String,
+        billNumber: json['billNumber'] as String,
+        date: DateTime.parse(json['date'] as String),
+        tableOrRoom: json['tableOrRoom'] as String?,
+        items: (json['items'] as List<dynamic>)
+            .map((e) => InvoiceItem.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        subtotal: (json['subtotal'] as num).toDouble(),
+        gstRate: (json['gstRate'] as num).toDouble(),
+        gstAmount: (json['gstAmount'] as num).toDouble(),
+        grandTotal: (json['grandTotal'] as num).toDouble(),
+      );
 }

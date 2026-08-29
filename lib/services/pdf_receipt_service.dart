@@ -51,10 +51,10 @@ class PdfReceiptService {
               // Table header
               pw.Table(
                 columnWidths: {
-                  0: const pw.FlexColumnWidth(5),   // Item name
-                  1: const pw.FixedColumnWidth(24),  // Qty
-                  2: const pw.FixedColumnWidth(40),  // Rate
-                  3: const pw.FixedColumnWidth(44),  // Amount
+                  0: const pw.FlexColumnWidth(4),   // Item name
+                  1: const pw.FixedColumnWidth(20),  // Qty
+                  2: const pw.FixedColumnWidth(48),  // Rate
+                  3: const pw.FixedColumnWidth(52),  // Amount
                 },
                 children: [
                   pw.TableRow(children: [
@@ -70,10 +70,10 @@ class PdfReceiptService {
               // Items
               pw.Table(
                 columnWidths: {
-                  0: const pw.FlexColumnWidth(5),
-                  1: const pw.FixedColumnWidth(24),
-                  2: const pw.FixedColumnWidth(40),
-                  3: const pw.FixedColumnWidth(44),
+                  0: const pw.FlexColumnWidth(4),
+                  1: const pw.FixedColumnWidth(20),
+                  2: const pw.FixedColumnWidth(48),
+                  3: const pw.FixedColumnWidth(52),
                 },
                 children: invoice.items.map((item) {
                   final String itemName = item.variantName == 'Regular'

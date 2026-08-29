@@ -187,13 +187,14 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                       backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     ),
-                    onPressed: () {
+                    onPressed: () async {
                       final roomNumber = _roomController.text.trim();
                       try {
-                        final invoice = ref.read(orderProvider.notifier).generateInvoice(
+                        final invoice = await ref.read(orderProvider.notifier).generateInvoice(
                           cartItems,
                           tableOrRoom: roomNumber.isNotEmpty ? roomNumber : null,
                         );
+                        if (!context.mounted) return;
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
@@ -201,6 +202,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           ),
                         );
                       } catch (e) {
+                        if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text(e.toString())),
                         );
