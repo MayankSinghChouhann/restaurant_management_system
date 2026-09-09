@@ -19,4 +19,20 @@ class PrintService {
       filename: 'GoldenLeaf_Bill_${invoice.billNumber}.pdf',
     );
   }
+
+  static Future<void> printKOT(Invoice invoice, String kotNumber) async {
+    final pdfBytes = await PdfReceiptService.generateKOT(invoice, kotNumber);
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => pdfBytes,
+      name: 'KOT_$kotNumber',
+    );
+  }
+
+  static Future<void> shareKOT(Invoice invoice, String kotNumber) async {
+    final pdfBytes = await PdfReceiptService.generateKOT(invoice, kotNumber);
+    await Printing.sharePdf(
+      bytes: pdfBytes,
+      filename: 'KOT_$kotNumber.pdf',
+    );
+  }
 }

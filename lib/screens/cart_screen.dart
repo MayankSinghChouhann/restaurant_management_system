@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../models/invoice.dart';
 import '../providers/cart_provider.dart';
 import '../providers/order_provider.dart';
 import '../services/billing_calculator.dart';
-import 'bill_preview_screen.dart';
+import 'active_order_screen.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key});
@@ -190,15 +191,36 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                     onPressed: () async {
                       final roomNumber = _roomController.text.trim();
                       try {
-                        final invoice = await ref.read(orderProvider.notifier).generateInvoice(
-                          cartItems,
-                          tableOrRoom: roomNumber.isNotEmpty ? roomNumber : null,
-                        );
+                        Invoice? existingOpenOrder;
+                        if (roomNumber.isNotEmpty) {
+                          try {
+                            existingOpenOrder = ref.read(orderProvider).firstWhere(
+                              (inv) => inv.status == 'OPEN' && 
+                                       inv.tableOrRoom?.toLowerCase() == roomNumber.toLowerCase()
+                            );
+                          } catch (_) {}
+                        }
+
+                        Invoice invoice;
+                        if (existingOpenOrder != null) {
+                          invoice = await ref.read(orderProvider.notifier).appendItemsToOrder(
+                            existingOpenOrder.id,
+                            cartItems,
+                          );
+                        } else {
+                          invoice = await ref.read(orderProvider.notifier).generateInvoice(
+                            cartItems,
+                            tableOrRoom: roomNumber.isNotEmpty ? roomNumber : null,
+                          );
+                        }
+
+                        ref.read(cartProvider.notifier).clear();
+
                         if (!context.mounted) return;
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => BillPreviewScreen(invoice: invoice),
+                            builder: (_) => ActiveOrderScreen(orderId: invoice.id),
                           ),
                         );
                       } catch (e) {
@@ -209,7 +231,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                       }
                     },
                     child: const Text(
-                      'GENERATE BILL',
+                      'PLACE ORDER',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),

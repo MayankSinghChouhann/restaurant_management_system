@@ -4,6 +4,7 @@ import '../models/invoice.dart';
 import '../providers/order_provider.dart';
 import '../services/print_service.dart';
 import 'bill_preview_screen.dart';
+import 'active_order_screen.dart';
 
 class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});
@@ -161,6 +162,20 @@ class _HistoryCard extends ConsumerWidget {
                         fontWeight: FontWeight.bold),
                   ),
                 ),
+                if (invoice.status == 'OPEN') ...[
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade700,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text(
+                      'OPEN',
+                      style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -261,13 +276,22 @@ class _HistoryCard extends ConsumerWidget {
                       label: 'View',
                       color: const Color(0xFF2C3E50),
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                BillPreviewScreen(invoice: invoice, isHistory: true),
-                          ),
-                        );
+                        if (invoice.status == 'OPEN') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ActiveOrderScreen(orderId: invoice.id),
+                            ),
+                          );
+                        } else {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  BillPreviewScreen(invoice: invoice, isHistory: true),
+                            ),
+                          );
+                        }
                       },
                     ),
                     const SizedBox(width: 8),

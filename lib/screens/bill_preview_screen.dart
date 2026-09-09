@@ -60,7 +60,7 @@ class BillPreviewScreen extends ConsumerWidget {
                       child: Column(
                         children: [
                           const Text(
-                            'HOTEL GOLDEN LEAF',
+                            'GOLDEN LEAF',
                             style: TextStyle(
                               color: Color(0xFFD4AF37),
                               fontSize: 20,
@@ -70,15 +70,15 @@ class BillPreviewScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 4),
                           const Text(
-                            'RESTAURANT',
+                            'CHUTNEY MARRY',
                             style: TextStyle(
                                 color: Colors.white70,
                                 fontSize: 13,
                                 letterSpacing: 2),
                           ),
                           const SizedBox(height: 4),
-                          Text(
-                            'www.hotelgoldenleafdehradun.com',
+                          const Text(
+                            'Suddowala',
                             style: TextStyle(
                                 color: Colors.white54, fontSize: 11),
                           ),

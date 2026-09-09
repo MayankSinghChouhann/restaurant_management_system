@@ -5,6 +5,7 @@ import '../models/invoice.dart';
 class StorageService {
   static const String _invoiceKey = 'gl_invoices';
   static const String _billCounterKey = 'gl_bill_counter';
+  static const String _kotCounterKey = 'gl_kot_counter';
   static const int _retentionDays = 7;
 
   /// Load all invoices from storage, auto-purge those older than 7 days
@@ -68,6 +69,15 @@ class StorageService {
     final current = prefs.getInt(_billCounterKey) ?? 0;
     final next = current + 1;
     await prefs.setInt(_billCounterKey, next);
+    return next;
+  }
+
+  /// Get and increment KOT counter
+  static Future<int> nextKOTCounter() async {
+    final prefs = await SharedPreferences.getInstance();
+    final current = prefs.getInt(_kotCounterKey) ?? 0;
+    final next = current + 1;
+    await prefs.setInt(_kotCounterKey, next);
     return next;
   }
 }
