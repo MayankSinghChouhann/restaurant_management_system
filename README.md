@@ -10,3 +10,5 @@ a professional, modern Hotel Restaurant Food Ordering &amp; Automatic Billing Sy
 - Update README 4
 
 - Update README 5
+
+- Update README 6
